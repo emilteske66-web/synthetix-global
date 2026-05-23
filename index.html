@@ -56,16 +56,16 @@
     </div>
 
     <script>
-        // Zweryfikowane i poprawne parametry Twojego serwera Supabase
+        // Dokładne parametry połączenia z Twojego panelu Supabase
         const SUPABASE_URL = "https://qjjjxrwcabyxtymsnudz.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_5MybUpnplztwQUGtgOXSW8w_1hnPp_gM28A73Xp1IEM6fof711g5T-eX9n5_q7w00LcoP7FqP88v2UonGq2KSw==";
+        // Używamy pełnego klucza rozszyfrowanego z Twojego zrzutu ekranu
+        const SUPABASE_ANON_KEY = "sb_secret_xYK4uBRpWHehszHdGqbK8w_bxHFClwu";
         
         let supabaseClient;
         try {
-            // Inicjalizacja połączenia
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         } catch(e) {
-            console.error("Błąd konfiguracji bazy danych: ", e);
+            console.error("Błąd połączenia z bazą:", e);
         }
 
         async function rejestracja(event) {
@@ -76,7 +76,6 @@
             const password = document.getElementById('user-pass').value;
 
             try {
-                // Wysyłamy paczkę danych do Supabase Auth
                 const { data, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password
@@ -87,12 +86,11 @@
                     return;
                 }
 
-                // Sukces połączenia! Chowamy rejestrację, otwieramy generator
+                // Sukces!
                 document.getElementById('panel-rejestracji').style.display = 'none';
                 document.getElementById('panel-tworzenia').style.display = 'block';
                 document.getElementById('wybrany-prod').innerText = produkt;
                 
-                // Proces ładowania panelu na ekranie
                 setTimeout(() => { document.getElementById('status-generatora').innerText = "Wczytywanie szablonów graficznych... [45%]"; }, 2000);
                 setTimeout(() => { document.getElementById('status-generatora').innerText = "Tworzenie unikalnego pliku i generowanie podglądu... [90%]"; }, 4500);
                 setTimeout(() => { document.getElementById('status-generatora').innerText = "✅ Produkt wygenerowany pomyślnie! Zabezpieczono w bazie danych."; }, 7000);
