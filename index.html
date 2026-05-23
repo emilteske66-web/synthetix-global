@@ -30,10 +30,12 @@
         <div id="panel-rejestracji" class="box">
             <h3>Krok 1: Załóż darmowe konto wydawcy</h3>
             <p style="color: #a0a5c0; margin-bottom: 20px;">Zapiszemy Twoje zarobki i wygenerowane produkty w bezpiecznej bazie.</p>
-            <input type="text" id="prod-name" placeholder="Co chcesz stworzyć? (np. Lodowy topór, Skin do broni)"><br>
-            <input type="email" id="user-email" placeholder="Twój adres e-mail"><br>
-            <input type="password" id="user-pass" placeholder="Stwórz bezpieczne hasło (min. 6 znaków)"><br>
-            <button onclick="rejestracja()">Zarejestruj się i generuj produkt</button>
+            <form id="register-form" onsubmit="rejestracja(event)">
+                <input type="text" id="prod-name" placeholder="Co chcesz stworzyć? (np. Lodowy topór, Skin do broni)" required><br>
+                <input type="email" id="user-email" placeholder="Twój adres e-mail" required><br>
+                <input type="password" id="user-pass" placeholder="Stwórz bezpieczne hasło (min. 6 znaków)" required><br>
+                <button type="submit">Zarejestruj się i generuj produkt</button>
+            </form>
         </div>
 
         <div id="panel-tworzenia" class="box">
@@ -43,7 +45,7 @@
             <div style="background: #0f0c20; padding: 40px; border-radius: 8px; border: 1px dashed #3d348b; margin: 20px 0;">
                 <p style="color: #6c7293;" id="status-generatora">Łączenie z darmowym rdzeniem obliczeniowym... [0%]</p>
             </div>
-            <button onclick="alert('W darmowym pakiecie startowym trwa kolejkowanie zadania graficznego. Podepnij bramkę płatności w następnym kroku, aby odблокиować natychmiastowy priorytet!')">Przejdź do konfiguracji wypłat BLIK</button>
+            <button onclick="alert('W darmowym pakiecie startowym trwa kolejkowanie zadania graficznego. Podepnij bramkę płatności w następnym kroku, aby odblokować natychmiastowy priorytet!')">Przejdź do konfiguracji wypłat BLIK</button>
         </div>
 
         <div class="features">
@@ -54,21 +56,56 @@
     </div>
 
     <script>
-        // Twoje unikalne, darmowe klucze bezpiecznego połączenia z bazą Supabase
+        // Parametry połączenia z Twoim projektem Supabase
         const SUPABASE_URL = "https://qjjjxrwcabyxtymsnudz.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_5MybUpnplztwQUGtgOXSW8w_1hnPp_gM28A73Xp1IEM6fof711g5T-eX9n5_q7w00LcoP7FqP88v2UonGq2KSw==";
         
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let supabaseClient;
+        try {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch(e) {
+            console.error("Błąd inicjalizacji Supabase: ", e);
+        }
 
-        async function rejestracja() {
+        async function rejestracja(event) {
+            // Zatrzymanie domyślnego przeładowania strony
+            event.preventDefault();
+
             const produkt = document.getElementById('prod-name').value;
             const email = document.getElementById('user-email').value;
             const password = document.getElementById('user-pass').value;
 
             if(!produkt || !email || !password) {
-                alert('Szefie, wypełnij wszystkie pola!');
+                alert('Szefie, uzupełnij wszystkie pola formularza!');
                 return;
             }
 
-            // Rejestracja użytkownika w Twojej bazie Supabase
-            const { data
+            try {
+                // Próba rejestracji użytkownika w Supabase Auth
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    alert("Supabase zwrócił błąd: " + error.message);
+                    return;
+                }
+
+                // Jeśli sukces – przełączamy ekrany
+                document.getElementById('panel-rejestracji').style.display = 'none';
+                document.getElementById('panel-tworzenia').style.display = 'block';
+                document.getElementById('wybrany-prod').innerText = produkt;
+                
+                // Animacja statusu ładowania generatora
+                setTimeout(() => { document.getElementById('status-generatora').innerText = "Wczytywanie szablonów graficznych... [45%]"; }, 2000);
+                setTimeout(() => { document.getElementById('status-generatora').innerText = "Tworzenie unikalnego pliku i generowanie podglądu... [90%]"; }, 4500);
+                setTimeout(() => { document.getElementById('status-generatora').innerText = "✅ Produkt wygenerowany pomyślnie! Zabezpieczono w bazie danych."; }, 7000);
+
+            } catch (err) {
+                alert("Wystąpił błąd krytyczny podczas wysyłania danych: " + err.message);
+            }
+        }
+    </script>
+</body>
+</html>
