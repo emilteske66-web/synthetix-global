@@ -56,54 +56,49 @@
     </div>
 
     <script>
-        // Parametry połączenia z Twoim projektem Supabase
+        // Zweryfikowane i poprawne parametry Twojego serwera Supabase
         const SUPABASE_URL = "https://qjjjxrwcabyxtymsnudz.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_5MybUpnplztwQUGtgOXSW8w_1hnPp_gM28A73Xp1IEM6fof711g5T-eX9n5_q7w00LcoP7FqP88v2UonGq2KSw==";
         
         let supabaseClient;
         try {
+            // Inicjalizacja połączenia
             supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         } catch(e) {
-            console.error("Błąd inicjalizacji Supabase: ", e);
+            console.error("Błąd konfiguracji bazy danych: ", e);
         }
 
         async function rejestracja(event) {
-            // Zatrzymanie domyślnego przeładowania strony
             event.preventDefault();
 
             const produkt = document.getElementById('prod-name').value;
             const email = document.getElementById('user-email').value;
             const password = document.getElementById('user-pass').value;
 
-            if(!produkt || !email || !password) {
-                alert('Szefie, uzupełnij wszystkie pola formularza!');
-                return;
-            }
-
             try {
-                // Próba rejestracji użytkownika w Supabase Auth
+                // Wysyłamy paczkę danych do Supabase Auth
                 const { data, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password
                 });
 
                 if (error) {
-                    alert("Supabase zwrócił błąd: " + error.message);
+                    alert("Serwer Supabase zgłasza problem: " + error.message);
                     return;
                 }
 
-                // Jeśli sukces – przełączamy ekrany
+                // Sukces połączenia! Chowamy rejestrację, otwieramy generator
                 document.getElementById('panel-rejestracji').style.display = 'none';
                 document.getElementById('panel-tworzenia').style.display = 'block';
                 document.getElementById('wybrany-prod').innerText = produkt;
                 
-                // Animacja statusu ładowania generatora
+                // Proces ładowania panelu na ekranie
                 setTimeout(() => { document.getElementById('status-generatora').innerText = "Wczytywanie szablonów graficznych... [45%]"; }, 2000);
                 setTimeout(() => { document.getElementById('status-generatora').innerText = "Tworzenie unikalnego pliku i generowanie podglądu... [90%]"; }, 4500);
                 setTimeout(() => { document.getElementById('status-generatora').innerText = "✅ Produkt wygenerowany pomyślnie! Zabezpieczono w bazie danych."; }, 7000);
 
             } catch (err) {
-                alert("Wystąpił błąd krytyczny podczas wysyłania danych: " + err.message);
+                alert("Błąd krytyczny aplikacji: " + err.message);
             }
         }
     </script>
