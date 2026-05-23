@@ -3,37 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Synthetix Global - Twórz i Zarabiaj</title>
+    <title>Synthetix Global - Wymyśl. Kliknij. Zarabiaj.</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background: #0f0c20; color: #fff; font-family: 'Segoe UI', sans-serif; text-align: center; padding: 50px; }
         .container { max-width: 800px; margin: 0 auto; }
-        h1 { font-size: 3.5rem; color: #00ffcc; text-shadow: 0 0 20px rgba(0,255,204,0.5); }
-        p { font-size: 1.2rem; color: #a0a5c0; }
-        .box { background: #161233; padding: 30px; border-radius: 15px; border: 1px solid #251f54; margin: 40px 0; }
-        input[type="text"] { width: 70%; padding: 15px; border-radius: 8px; border: none; background: #0f0c20; color: #fff; font-size: 1rem; border: 1px solid #3d348b; margin-bottom: 15px; }
-        button { padding: 15px 30px; border-radius: 8px; border: none; background: #00ffcc; color: #0f0c20; font-weight: bold; font-size: 1rem; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #00ccaa; box-shadow: 0 0 15px #00ffcc; }
+        h1 { font-size: 3.5rem; color: #00ffcc; text-shadow: 0 0 20px rgba(0,255,204,0.5); margin-bottom: 5px; }
+        p.subtitle { font-size: 1.2rem; color: #a0a5c0; margin-bottom: 40px; }
+        .box { background: #161233; padding: 40px; border-radius: 15px; border: 1px solid #251f54; margin: 20px 0; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h3 { color: #fff; margin-top: 0; font-size: 1.5rem; }
+        input { width: 80%; padding: 15px; border-radius: 8px; border: 1px solid #3d348b; background: #0f0c20; color: #fff; font-size: 1rem; margin-bottom: 15px; text-align: center; }
+        button { width: 85%; padding: 15px; border-radius: 8px; border: none; background: #00ffcc; color: #0f0c20; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #00ccaa; box-shadow: 0 0 20px #00ffcc; }
         .features { display: flex; justify-content: space-around; margin-top: 50px; }
-        .feat { background: #161233; padding: 20px; border-radius: 10px; width: 28%; border: 1px solid #251f54; }
+        .feat { background: #161233; padding: 20px; border-radius: 10px; width: 28%; border: 1px solid #251f54; font-size: 0.9rem; }
+        .feat h3 { color: #00ffcc; font-size: 1.2rem; margin-bottom: 10px; }
+        #panel-tworzenia { display: none; }
+        .success-msg { color: #00ffcc; font-weight: bold; margin-bottom: 15px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>SYNTHETIX GLOBAL</h1>
-        <p>Wymyśl. Kliknij. Zarabiaj. Twój sklep internetowy w 60 sekund.</p>
+        <p class="subtitle">Zarabiaj na własnych przedmiotach i grafikach z gier w 60 sekund.</p>
         
-        <div class="box">
-            <h3>Wypróbuj nasz Automatyczny Kreator Przedmiotów:</h3>
-            <p>Wpisz co chcesz stworzyć do swojej gry (np. "Ognisty miecz RPG"):</p>
-            <input type="text" placeholder="Np. Lodowy topór, Kosmiczny skin, Diamentowa tarcza..."><br>
-            <button onclick="alert('System generowania uruchamia się... Załóż darmowe konto, aby odebrać plik i podpiąć płatności BLIK!')">Generuj produkt</button>
+        <div id="panel-rejestracji" class="box">
+            <h3>Krok 1: Załóż darmowe konto wydawcy</h3>
+            <p style="color: #a0a5c0; margin-bottom: 20px;">Zapiszemy Twoje zarobki i wygenerowane produkty w bezpiecznej bazie.</p>
+            <input type="text" id="prod-name" placeholder="Co chcesz stworzyć? (np. Lodowy topór, Skin do broni)"><br>
+            <input type="email" id="user-email" placeholder="Twój adres e-mail"><br>
+            <input type="password" id="user-pass" placeholder="Stwórz bezpieczne hasło (min. 6 znaków)"><br>
+            <button onclick="rejestracja()">Zarejestruj się i generuj produkt</button>
+        </div>
+
+        <div id="panel-tworzenia" class="box">
+            <p class="success-msg">🎉 Konto utworzone pomyślnie w bazie Synthetix!</p>
+            <h3>Krok 2: Twój Inteligentny Generator</h3>
+            <p>Trwa uruchamianie silnika graficznego dla przedmiotu: <strong id="wybrany-prod" style="color: #00ffcc;"></strong></p>
+            <div style="background: #0f0c20; padding: 40px; border-radius: 8px; border: 1px dashed #3d348b; margin: 20px 0;">
+                <p style="color: #6c7293;" id="status-generatora">Łączenie z darmowym rdzeniem obliczeniowym... [0%]</p>
+            </div>
+            <button onclick="alert('W darmowym pakiecie startowym trwa kolejkowanie zadania graficznego. Podepnij bramkę płatności w następnym kroku, aby odблокиować natychmiastowy priorytet!')">Przejdź do konfiguracji wypłat BLIK</button>
         </div>
 
         <div class="features">
-            <div class="feat"><h3>1. Generujesz</h3><p>Nasz system natychmiast tworzy unikalną grafikę lub model 3D do Twojej gry.</p></div>
-            <div class="feat"><h3>2. Wystawiasz</h3><p>Jednym kliknięciem tworzysz stronę sklepu bez wiedzy technicznej.</p></div>
-            <div class="feat"><h3>3. Zarabiasz</h3><p>Gracze płacą BLIK-iem, a kasa leci prosto do Ciebie. My bierzemy tylko małą prowizję.</p></div>
+            <div class="feat"><h3>1. Generujesz</h3><p>Nasz automatyczny kreator natychmiast tworzy unikalną grafikę lub plik przedmiotu do Twojej gry.</p></div>
+            <div class="feat"><h3>2. Wystawiasz</h3><p>Jednym kliknięciem system generuje dla Ciebie gotowy sklep i linki do płatności.</p></div>
+            <div class="feat"><h3>3. Zarabiasz</h3><p>Twoi gracze płacą BLIK-iem, a czysty zysk trafia prosto na Twoje konto.</p></div>
         </div>
     </div>
-</body>
-</html>
+
+    <script>
+        // Twoje unikalne, darmowe klucze bezpiecznego połączenia z bazą Supabase
+        const SUPABASE_URL = "https://qjjjxrwcabyxtymsnudz.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_5MybUpnplztwQUGtgOXSW8w_1hnPp_gM28A73Xp1IEM6fof711g5T-eX9n5_q7w00LcoP7FqP88v2UonGq2KSw==";
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function rejestracja() {
+            const produkt = document.getElementById('prod-name').value;
+            const email = document.getElementById('user-email').value;
+            const password = document.getElementById('user-pass').value;
+
+            if(!produkt || !email || !password) {
+                alert('Szefie, wypełnij wszystkie pola!');
+                return;
+            }
+
+            // Rejestracja użytkownika w Twojej bazie Supabase
+            const { data
